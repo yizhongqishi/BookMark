@@ -86,6 +86,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # 打开文件
     def theOpen(self):
         self.path, _ = QFileDialog.getOpenFileName(self, 'Open file')
+        if self.path is '':
+            return
         fo = open(self.path, 'r')
         stri = fo.read()
         fo.close()
