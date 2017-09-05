@@ -172,8 +172,12 @@ class ChangeWindow(QWidget):
             i += 1
             y += 20 * (i // 4)
             i %= 4
+        self.hang = y // 20 - 1
+        self.lie = i
         self.ll = y - 20
         self.resize(400, 160 + self.ll)
+
+
 
         widget = QWidget()
         self.layout1.addWidget(widget)
@@ -233,7 +237,9 @@ class ChangeWindow(QWidget):
                 self.categoryList.append(kk)
                 checkBox = QCheckBox(kk)
                 self.checkBoxList.append(checkBox)
-                self.layout.addWidget(checkBox)
+                self.layout.addWidget(checkBox, self.hang, self.lie)
+                self.hang += self.lie // 4
+                self.lie = (self.lie + 1) % 4
                 self.nn.setText('')
 
     def delflag(self):
@@ -258,6 +264,8 @@ class ChangeWindow(QWidget):
             i += 1
             y += 20 * (i // 4)
             i %= 4
+        self.hang = y // 20 - 1
+        self.lie = i
         self.ll = y - 20
         self.resize(400, 160 + self.ll)
 
