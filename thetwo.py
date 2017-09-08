@@ -3,14 +3,11 @@
 import os
 import sys
 import time
-from PyQt5 import QtGui
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QSize
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
 
 
@@ -68,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         kk.setLayout(l22)
 
         kk1 = QWidget()
+        kk1.setStyleSheet("font-size:20px;font-style:SansSerif")
         l21 = QFormLayout()
         label = QLabel("搜索列表：")
         l21.addRow(label)
@@ -102,10 +100,10 @@ class MainWindow(QtWidgets.QMainWindow):
         changeBu.clicked.connect(self.change)
         zhaiLabel = QLabel("摘记")
         zhaijiEd = QTextEdit()
-        zhaijiEd.setMinimumHeight(200)
+        zhaijiEd.setMinimumHeight(250)
         pingLable = QLabel("评注")
         pingZhuEd = QTextEdit()
-        pingZhuEd.setMinimumHeight(500)
+        pingZhuEd.setMinimumHeight(250)
 
         l311 = QHBoxLayout()
         l311.addWidget(createLabel)
@@ -141,11 +139,16 @@ class MainWindow(QtWidgets.QMainWindow):
         l314.addWidget(zhaijiEd)
         l314.setContentsMargins(0, 0, 0, 0)
 
+        l315 = QHBoxLayout()
+        l315.addWidget(pingLable)
+        l315.addWidget(pingZhuEd)
+
         l31.setContentsMargins(0, 0, 0, 0)
         l31.addRow(l311)
         l31.addRow(l312)
         l31.addRow(l313)
         l31.addRow(l314)
+        l31.addRow(l315)
         ww3.setLayout(l31)
 
         layout3.setContentsMargins(20, 40, 20, 0)
