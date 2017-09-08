@@ -8,13 +8,13 @@ import sys
 import time
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import QTextCodec
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
 
 qtCreatorFile = "mainwindow.ui"  # Enter file here.
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
-
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -53,9 +53,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.zhai = self.zhaiji.toPlainText()
         self.ping = self.pingzhu.toPlainText()
         self.ftime = self.theFirst.text()
-        self.ltime = time.strftime("%Y-%m-%d", time.localtime())
+        self.ltime = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())
         self.thesave = self.ftime + '&&' + self.ltime + '&&' + self.bookname + '&&' + self.cate + '&&' + self.zhai + '&&' + self.ping + '&&'+self.theinfo
         print(self.path)
+        self.theLast.setText(self.ltime)
         if self.path is '':
             self.path, _ = QFileDialog.getSaveFileName(self, 'save file', "saveFile", "io files (*.io);;all files(*.*)")
         if self.path is '':
@@ -76,8 +77,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
     def updateTime(self):
-        self.theFirst.setText(time.strftime("%Y-%m-%d", time.localtime()))
-        self.theLast.setText(time.strftime("%Y-%m-%d", time.localtime()))
+        self.theFirst.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
+        self.theLast.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
 
     # 导出为word格式
     def theExport(self):
@@ -85,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # 打开文件
     def theOpen(self):
-        self.path, _ = QFileDialog.getOpenFileName(self, 'Open file')
+        self.path, _ = QFileDialog.getOpenFileName(self, 'Open file', filter="IO Files (*.io)")
         if self.path is '':
             return
         fo = open(self.path, 'r')
@@ -119,8 +120,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     def theNew(self):
-        self.theFirst.setText(time.strftime("%Y-%m-%d", time.localtime()))
-        self.theLast.setText(time.strftime("%Y-%m-%d", time.localtime()))
+        self.theFirst.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
+        self.theLast.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
         self.bookName.setText("")
         self.category.setCurrentIndex(0)
         self.zhaiji.setText("")
@@ -171,8 +172,12 @@ class ChangeWindow(QWidget):
             i += 1
             y += 20 * (i // 4)
             i %= 4
+        self.hang = y // 20 - 1
+        self.lie = i
         self.ll = y - 20
         self.resize(400, 160 + self.ll)
+
+
 
         widget = QWidget()
         self.layout1.addWidget(widget)
@@ -232,7 +237,9 @@ class ChangeWindow(QWidget):
                 self.categoryList.append(kk)
                 checkBox = QCheckBox(kk)
                 self.checkBoxList.append(checkBox)
-                self.layout.addWidget(checkBox)
+                self.layout.addWidget(checkBox, self.hang, self.lie)
+                self.hang += self.lie // 4
+                self.lie = (self.lie + 1) % 4
                 self.nn.setText('')
 
     def delflag(self):
@@ -257,6 +264,8 @@ class ChangeWindow(QWidget):
             i += 1
             y += 20 * (i // 4)
             i %= 4
+        self.hang = y // 20 - 1
+        self.lie = i
         self.ll = y - 20
         self.resize(400, 160 + self.ll)
 
@@ -316,7 +325,7 @@ class BookInfo(QWidget):
         la.addStretch(1)
         la.addWidget(cancellBu)
         laList.append(la)
-        self.filename = MyLabel()
+        self.filename = MyLabel(path=self.path)
         pe = QPalette()
         pe.setColor(QPalette.WindowText, Qt.blue)
         self.filename.setPalette(pe)
@@ -360,10 +369,12 @@ class BookInfo(QWidget):
 class MyLabel(QLabel):
     path = ''
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, path=None):
         super(MyLabel, self).__init__(parent)
+        self.path = path
 
     def mouseDoubleClickEvent(self, e):
+        print(self.path)
         os.system(self.path)
 
 
