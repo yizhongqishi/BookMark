@@ -1,31 +1,79 @@
 # /usr/bin/env python
 # -*- coding : utf-8 -*-
 import os
+import re
 import sys
 import time
+import zipfile
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
+        self.FindPath = './data/his/'
+        self.theinfo = '&&&&&&'
         QtWidgets.QMainWindow.__init__(self)
         self.filePath = ''
-        self.categoryPath = './file/category.io'
+        self.categoryPath = './data/file/category.io'
         self.kk = []
+        self.bookin = None
+        self.files = None
         self.setupUi()
 
     def setupUi(self):
         ww = QWidget()
+
+        menu = QMenu()
+        # 新建笔记 删除笔记 笔记导入 导出为word 笔记备份 类别管理
         self.setWindowTitle("书籍摘录助手")
         # self.setFixedSize(1366, 768)
         self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.resize(1366, 768)
         self.setWindowState(Qt.WindowMaximized)
+        menuList = QWidget()
+        menuList.setStyleSheet("font-size:20px;font-style:SansSerif;")
+        layout0 = QVBoxLayout()
+        layoutMenu = QHBoxLayout()
+        newFile = QPushButton("新建笔记")
+        newFile.clicked.connect(self.thenew)
+        newFile.setMinimumHeight(40)
+        delFile = QPushButton("删除笔记")
+        delFile.clicked.connect(self.delfile)
+        delFile.setMinimumHeight(40)
+        importFile = QPushButton("笔记导入")
+        importFile.clicked.connect(self.importfile)
+        importFile.setMinimumHeight(40)
+        toWord = QPushButton("导出为word")
+        toWord.setMinimumHeight(40)
+        exportFile = QPushButton("笔记备份")
+        exportFile.clicked.connect(self.exportfile)
+        exportFile.setMinimumHeight(40)
+        cateAdmin = QPushButton("类别管理")
+        cateAdmin.setMinimumHeight(40)
+        cateAdmin.clicked.connect(self.change)
+        saveBu = QPushButton("保  存")
+        saveBu.setMinimumHeight(40)
+        saveBu.clicked.connect(self.save)
+        layoutMenu.setContentsMargins(0, 0, 0, 0)
+        menuList.setLayout(layoutMenu)
+        layoutMenu.addWidget(newFile)
+        layoutMenu.addWidget(delFile)
+        layoutMenu.addWidget(importFile)
+        layoutMenu.addWidget(toWord)
+        layoutMenu.addWidget(exportFile)
+        layoutMenu.addWidget(cateAdmin)
+        layoutMenu.addWidget(saveBu)
+        layout0.setContentsMargins(0, 0, 0, 0)
+        ww0 = QWidget()
+
+        ww0.setStyleSheet("font-size:20px;font-style:SansSerif;")
         mainlayout = QHBoxLayout()
         mainlayout.setContentsMargins(0, 0, 0, 0)
         layout1 = QVBoxLayout()
@@ -33,115 +81,131 @@ class MainWindow(QtWidgets.QMainWindow):
         layout3 = QVBoxLayout()
 
         ww1 = QWidget()
-        ww1.setStyleSheet("font-size:20px;font-style:SansSerif")
+        ww1.setStyleSheet("font-size:20px;font-style:SansSerif;")
         l11 = QVBoxLayout()
-        newfile = QPushButton("新建文件")
-        opfile = QPushButton("打开文件")
-        newfile.setMinimumHeight(40)
-        opfile.setMinimumHeight(40)
-        l11.setContentsMargins(20, 40, 20, 0)
-        l11.setSpacing(40)
-        newfile.setFont(QFont('SansSerif', 20))
-        opfile.setFont(QFont('SansSerif', 20))
-        opfile.resize(opfile.sizeHint())
-        l11.addWidget(newfile)
-        l11.addWidget(opfile)
-        l11.addStretch(6)
+        self.treelist = QTreeWidget()
+        self.treelist.setMinimumHeight(400)
+        self.categoryTree = QTreeWidgetItem()
+        self.categoryTree.setText(0, '全部类别')
+        self.treelist.setColumnCount(1)
+        self.treelist.setHeaderLabel("")
+        self.treelist.addTopLevelItem(self.categoryTree)
+        self.treelist.itemClicked.connect(self.checkFile)
+
+        l11.setContentsMargins(0, 0, 0, 0)
+        layout1.setContentsMargins(5, 0, 20, 0)
+        l11.setSpacing(55)
+        l11.addWidget(self.treelist)
         ww1.setLayout(l11)
-        layout1.addWidget(ww1)
+        layout1.addWidget(ww1, 8)
+        layout1.addStretch(1)
 
         l22 = QHBoxLayout()
         kk = QWidget()
-        kk.setStyleSheet("font-size:20px;font-style:SansSerif")
+        kk.setStyleSheet("font-size:20px;font-style:SansSerif;")
         searchBu = QPushButton("搜索")
         searchBu.setFont(QFont('SansSerif', 20))
+        searchBu.clicked.connect(self.searchfile)
         searchBu.setMinimumHeight(40)
-        searchEd = QLineEdit()
-        searchEd.setMinimumHeight(30)
-        searchEd.setFont(QFont('SansSerif', 20))
-        searchEd.resize(searchEd.sizeHint())
-        l22.addWidget(searchEd)
+        self.searchEd = QLineEdit()
+        self.searchEd.setMinimumHeight(30)
+        self.searchEd.setFont(QFont('SansSerif', 20))
+        self.searchEd.resize(self.searchEd.sizeHint())
+        l22.addWidget(self.searchEd)
         l22.addWidget(searchBu)
         kk.setLayout(l22)
 
         kk1 = QWidget()
-        kk1.setStyleSheet("font-size:20px;font-style:SansSerif")
-        l21 = QFormLayout()
-        label = QLabel("搜索列表：")
-        l21.addRow(label)
+        kk1.setStyleSheet("font-size:20px;font-style:SansSerif;")
+        l21 = QVBoxLayout()
+        label = QLabel("笔记列表：")
+        self.tll = QListWidget()
+        self.tll.clicked.connect(self.open)
+
+        l21.addWidget(label)
+        l21.addWidget(self.tll)
         kk1.setLayout(l21)
 
         l21.setContentsMargins(0, 0, 0, 0)
         l22.setContentsMargins(0, 0, 0, 0)
-        layout2.setContentsMargins(20, 40, 20, 0)
+        layout2.setContentsMargins(20, 0, 20, 0)
 
         layout2.addWidget(kk)
         layout2.addWidget(kk1)
-        layout2.addStretch(0)
+        layout2.setStretchFactor(kk, 1)
+        layout2.setStretchFactor(kk1, 7)
+        layout2.addStretch(1)
 
         ww3 = QWidget()
-        ww3.setStyleSheet("font-size:20px;font-style:SansSerif")
+        ww3.setStyleSheet("font-size:20px;font-style:SansSerif;")
         l31 = QFormLayout()
         createLabel = QLabel("创建时间：")
-        createTime = QLabel()
-        createTime.setText(self.getTime(0))
+        self.createTime = QLabel()
+        self.createTime.setText(self.getTime(0))
         lastLabel = QLabel("更新时间：")
-        lastTime = QLabel()
-        lastTime.setText(self.getTime(1))
+        self.lastTime = QLabel()
+        self.lastTime.setText(self.getTime(1))
         nameLabel = QLabel("书名")
-        nameEd = QLineEdit()
+        self.nameEd = QLineEdit()
+        otherBu = QPushButton("其他信息")
+        otherBu.clicked.connect(self.info)
+        otherBu.setMinimumHeight(40)
         cateLable = QLabel("类别")
-        nameEd.setMinimumHeight(30)
+        self.nameEd.setMinimumHeight(30)
         self.category = QComboBox()
         self.category.setMinimumHeight(35)
+
         self.getCategory()
-        changeBu = QPushButton("修改标签")
-        changeBu.setMinimumHeight(40)
-        changeBu.clicked.connect(self.change)
+        ylayout = QVBoxLayout()
         zhaiLabel = QLabel("摘记")
-        zhaijiEd = QTextEdit()
-        zhaijiEd.setMinimumHeight(250)
+        ylayout.addWidget(zhaiLabel)
+        ylayout.addStretch(1)
+        self.zhaijiEd = QTextEdit()
+        self.zhaijiEd.setMinimumHeight(250)
+        ylayout1 = QVBoxLayout()
         pingLable = QLabel("评注")
-        pingZhuEd = QTextEdit()
-        pingZhuEd.setMinimumHeight(250)
+        ylayout1.addWidget(pingLable)
+        ylayout1.addStretch(1)
+        self.pingZhuEd = QTextEdit()
+        self.pingZhuEd.setMinimumHeight(240)
 
         l311 = QHBoxLayout()
         l311.addWidget(createLabel)
-        l311.addWidget(createTime)
+        l311.addWidget(self.createTime)
         l311.addWidget(lastLabel)
-        l311.addWidget(lastTime)
+        l311.addWidget(self.lastTime)
         l311.setStretchFactor(createLabel, 1)
-        l311.setStretchFactor(createTime, 3)
+        l311.setStretchFactor(self.createTime, 3)
         l311.setStretchFactor(lastLabel, 1)
-        l311.setStretchFactor(lastTime, 3)
+        l311.setStretchFactor(self.lastTime, 3)
         l311.setContentsMargins(0, 0, 0, 0)
 
         l312 = QHBoxLayout()
         l312.addWidget(nameLabel)
-        l312.addWidget(nameEd)
-        l312.addStretch(11)
+        l312.addWidget(self.nameEd)
+        l312.addWidget(otherBu)
+        l312.addStretch(7)
         l312.setStretchFactor(nameLabel, 3)
-        l312.setStretchFactor(nameEd, 9)
+        l312.setStretchFactor(self.nameEd, 9)
+        l312.setStretchFactor(otherBu, 2)
         l312.setContentsMargins(0, 0, 0, 0)
 
         l313 = QHBoxLayout()
         l313.addWidget(cateLable)
         l313.addWidget(self.category)
-        l313.addWidget(changeBu)
         l313.addStretch(7)
         l313.setStretchFactor(cateLable, 3)
         l313.setStretchFactor(self.category, 9)
-        l313.setStretchFactor(changeBu, 2)
         l313.setContentsMargins(0, 0, 0, 0)
 
         l314 = QHBoxLayout()
-        l314.addWidget(zhaiLabel)
-        l314.addWidget(zhaijiEd)
+        l314.addLayout(ylayout)
+        l314.addWidget(self.zhaijiEd)
         l314.setContentsMargins(0, 0, 0, 0)
 
         l315 = QHBoxLayout()
-        l315.addWidget(pingLable)
-        l315.addWidget(pingZhuEd)
+        l315.addLayout(ylayout1)
+        l315.addWidget(self.pingZhuEd)
 
         l31.setContentsMargins(0, 0, 0, 0)
         l31.addRow(l311)
@@ -151,7 +215,7 @@ class MainWindow(QtWidgets.QMainWindow):
         l31.addRow(l315)
         ww3.setLayout(l31)
 
-        layout3.setContentsMargins(20, 40, 20, 0)
+        layout3.setContentsMargins(0, 0, 5, 0)
         layout3.addWidget(ww3)
 
         mainlayout.addLayout(layout1)
@@ -161,11 +225,234 @@ class MainWindow(QtWidgets.QMainWindow):
         mainlayout.setStretchFactor(layout2, 2)
         mainlayout.setStretchFactor(layout3, 4)
 
-        ww.setLayout(mainlayout)
+        ww0.setLayout(mainlayout)
+        layout0.addWidget(menuList)
+        layout0.addWidget(ww0)
+
+        ww.setLayout(layout0)
         self.setCentralWidget(ww)
+
+    def searchfile(self):
+        text = self.searchEd.text()
+        pattern = r'^.*' + terxt + r'.*$'
+        li = []
+        for i in range(self.tll.count()):
+            if re.match(pattern, self.tll.item(i).text()):
+                li.append(self.tll.item(i).text())
+        self.tll.clear()
+        for l in li:
+            item = QListWidgetItem()
+            item.setText(l)
+            self.tll.addItem(item)
+
+
+    def importfile(self):
+        reply = QMessageBox.question(self, '警告', '该操作将覆盖原有数据，是否继续？', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            filepath, _ = QFileDialog.getOpenFileName(self, "导入数据", "./", "Out files(*.out)")
+            if filepath == '':
+                return
+            zzipfile = zipfile.ZipFile(filepath, 'r')
+            files = os.listdir('./data/')
+            for file in files:
+                self.remove(os.path.join('./data', file))
+            os.mkdir('./data')
+            for name in zzipfile.namelist():
+                data = zzipfile.read(name)
+                saveDir = os.path.dirname('./data/' + name)
+                if not os.path.exists(saveDir):
+                    os.makedirs(saveDir)
+                file = open('./data/' + name, 'w+b')
+                file.write(data)
+                file.close()
+            zzipfile.close()
+            self.thenew()
+            self.getCategory()
+
+    def remove(self, file):
+        if os.path.isdir(file):
+            ffs = os.listdir(file)
+            for ff in ffs:
+                self.remove(os.path.join(file, ff))
+            if os.path.exists(file):
+                os.removedirs(file)
+        else:
+            if os.path.exists(file):
+                os.remove(file)
+
+    def delfile(self):
+        self.dd = DelWindow()
+        self.dd.resize(480, 272)
+        self.dd.setStyleSheet("font-size:20px;font-style:SansSerif")
+        self.dd.work()
+        self.dd.myclick.connect(self.oo)
+        pass
+
+    @QtCore.pyqtSlot(str)
+    def oo(self, str):
+        print("getit")
+        self.tll.clear()
+
+    def exportfile(self):
+        output_filename, _ = QFileDialog.getSaveFileName(self, "数据备份", "", "out files (*.out);;")
+        self.zipf = zipfile.ZipFile(output_filename, 'w')
+        pre_len = len(os.path.dirname("./data/"))
+        for parent, dirnames, filenames in os.walk("./data/"):
+            for filename in filenames:
+                pathfile = os.path.join(parent, filename)
+                arcname = pathfile[pre_len:].strip(os.path.sep)  # 相对路径
+                print(pathfile, arcname)
+                self.zipf.write(pathfile, arcname)
+        self.zipf.close()
+        pass
+
+    def thenew(self):
+        self.createTime.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
+        self.lastTime.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
+        self.nameEd.setText("")
+        self.category.setCurrentIndex(0)
+        self.zhaijiEd.setText("")
+        self.pingZhuEd.setText("")
+        self.thesave = ''
+        self.filePath = ''
+        if self.bookin is not None:
+            self.bookin.deleteLater()
+
+    @QtCore.pyqtSlot(str)
+    def ss(self, str):
+        self.theinfo = str
+        self.bookin.deleteLater()
+        self.bookin = None
+        pass
+
+    def info(self):
+        self.bookin = BookInfo(self.theinfo.split('&&'))
+        self.bookin.setStyleSheet("font-size:20px;font-style:SansSerif")
+        self.bookin.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
+        self.bookin.work()
+        self.bookin.myclick.connect(self.ss)
+
+    def scanCategory(self):
+        fo = open(self.categoryPath, 'r')
+        stri = fo.read()
+        fo.close()
+        kk = stri.split('&&')
+        self.delCategory()
+        for k in kk:
+            item = QTreeWidgetItem()
+            item.setText(0, k)
+            self.categoryTree.addChild(item)
+            ttz = os.path.join('./data/his', k)
+            if not os.path.exists(ttz):
+                os.mkdir(ttz)
+        files = os.listdir("./data/his/")
+        for file in files:
+            if file not in kk:
+                self.remove("./data/his/" + file)
+        pass
+
+    def delCategory(self):
+        self.treelist.clear()
+        self.categoryTree = QTreeWidgetItem()
+        self.categoryTree.setText(0, "全部类别")
+        self.treelist.addTopLevelItem(self.categoryTree)
+
+    def save(self):
+        self.bookname = self.nameEd.text()
+        self.cate = self.category.currentText()
+        self.zhai = self.zhaijiEd.toPlainText()
+        self.ping = self.pingZhuEd.toPlainText()
+        self.ftime = self.createTime.text()
+        self.ltime = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())
+        self.thesave = self.ftime + '&&' + self.ltime + '&&' + self.bookname + '&&' + self.cate + '&&' + self.zhai + '&&' + self.ping + '&&' + self.theinfo
+        print(self.filePath)
+        self.lastTime.setText(self.ltime)
+        message = QMessageBox()
+        if self.bookname == "":
+            message.warning(self, '错误', '书名不能为空')
+        else:
+            if self.filePath is '':
+                self.filePath = './data/his/' + self.cate + '/' + self.bookname + '.io'
+            else:
+                if self.tttt != self.cate:
+                    reply = QMessageBox.question(self, '警告', '类别发生改变，将在新选择类别下生成新的笔记！', QMessageBox.Yes | QMessageBox.No,
+                                                 QMessageBox.No)
+                    if reply == QMessageBox.Yes:
+                        if os.path.exists(self.filePath):
+                            os.remove(self.filePath)
+                        self.filePath = './data/his/' + self.cate + '/' + self.bookname + '.io'
+                    else:
+                        return
+                if self.ttttname != self.bookname:
+                    reply = QMessageBox.question(self, '警告', '书名发生改变，将生成新的书籍笔记！', QMessageBox.Yes | QMessageBox.No,
+                                                 QMessageBox.No)
+                    if reply == QMessageBox.Yes:
+                        if os.path.exists(self.filePath):
+                            os.remove(self.filePath)
+                        self.filePath = './data/his/' + self.cate + '/' + self.bookname + '.io'
+                    else:
+                        return
+            if self.filePath is '':
+                return
+            fo = open(self.filePath, 'w')
+            fo.write(self.thesave)
+            fo.close()
+
+    def checkFile(self):
+        item = QtWidgets.QTreeWidgetItemIterator(self.categoryTree)
+        while item.value():
+            if item.value().isSelected():
+                if item.value().text(0) != '全部类别':
+                    self.ppp = self.FindPath + item.value().text(0) + '/'
+                    if os.path.exists(self.ppp):
+                        self.files = os.listdir(self.ppp)
+                    else:
+                        os.makedirs(self.ppp)
+                        self.files = os.listdir(self.ppp)
+                    self.updateList()
+
+                break
+            item = item.__iadd__(1)
+
+    def updateList(self):
+        self.tll.clear()
+        if self.files is not None:
+            for name in self.files:
+                item = QListWidgetItem()
+                item.setText(name.split('.')[0])
+                self.tll.addItem(item)
+
+    def open(self):
+        for i in range(self.tll.count()):
+            if self.tll.item(i).isSelected():
+                self.filePath = self.ppp + self.tll.item(i).text() + '.io'
+                fo = open(self.filePath, 'r')
+                stri = fo.read()
+                fo.close()
+                self.kk = stri.split('&&')
+                self.updatezzz()
+                break
+        pass
+
+    def updatezzz(self):
+        self.createTime.setText(self.kk[0])
+        self.lastTime.setText(self.kk[1])
+        self.nameEd.setText(self.kk[2])
+        self.ttttname = self.kk[2]
+        self.category.setCurrentText(self.kk[3])
+        self.tttt = self.kk[3]
+        self.zhaijiEd.setText(self.kk[4])
+        self.pingZhuEd.setText(self.kk[5])
+        i = 6
+        self.theinfo = ''
+        while i < 10:
+            self.theinfo = self.theinfo + self.kk[i] + '&&'
+            i += 1
+        self.theinfo = self.theinfo[:len(self.theinfo) - 2]
 
     def change(self):
         self.chage = ChangeWindow()
+        self.chage.setStyleSheet("font-size:20px;font-style:SansSerif")
         self.chage.work()
         self.chage.myclicked.connect(self.getCategory)
 
@@ -177,6 +464,7 @@ class MainWindow(QtWidgets.QMainWindow):
         kk = stri.split('&&')
         for k in kk:
             self.category.addItem(k)
+        self.scanCategory()
 
     def getTime(self, index):
         if self.filePath is '':
@@ -200,7 +488,7 @@ class ChangeWindow(QWidget):
         lala.addLayout(self.layout, 0)
         lala.addLayout(self.layout1, 1)
         # 打开标签文件读取标签
-        self.path = os.path.abspath('./file/category.io')
+        self.path = os.path.abspath('./data/file/category.io')
         fo = open(self.path, 'r')
         stri = fo.read()
         fo.close()
@@ -238,21 +526,25 @@ class ChangeWindow(QWidget):
         addfl = QtWidgets.QPushButton()
         addfl.setText("增  加")
         addfl.setObjectName("addflag")
+        addfl.setMinimumHeight(40)
         addfl.clicked.connect(self.addflag)
 
         delfl = QtWidgets.QPushButton()
         delfl.setText("删除选中")
         delfl.setObjectName("addflag")
+        delfl.setMinimumHeight(40)
         delfl.clicked.connect(self.delflag)
 
         back = QtWidgets.QPushButton()
         back.setText("确  认")
         back.setObjectName("back")
+        back.setMinimumHeight(40)
         back.clicked.connect(self.backMain)
 
         causel = QtWidgets.QPushButton()
         causel.setText("取  消")
         causel.setObjectName("causel")
+        causel.setMinimumHeight(40)
         causel.clicked.connect(self.close)
 
         self.layoutForButton.addWidget(addfl)
@@ -315,6 +607,162 @@ class ChangeWindow(QWidget):
         self.lie = i
         self.ll = y - 20
         self.resize(400, 160 + self.ll)
+
+    def work(self):
+        if not self.isVisible():
+            self.show()
+
+
+class BookInfo(QWidget):
+    myclick = QtCore.pyqtSignal(str)
+
+    def __init__(self, kk=None):
+        QWidget.__init__(self)
+        if kk is not None:
+            self.auth = kk[0]
+            self.Make = kk[1]
+            self.time = kk[2]
+            self.path = kk[3]
+        else:
+            self.auth = ''
+            self.Make = ''
+            self.time = ''
+            self.path = ''
+        self.setupUi()
+
+    def setupUi(self):
+        self.resize(300, 160)
+        self.setWindowTitle("书籍详细信息")
+        self.editList = []
+        laList = []
+        labelList = []
+        kk = ['作者    ', '出版社  ', '出版时间', '选择文件']
+        i = 0
+        while i < 4:
+            edit = QLineEdit()
+            self.editList.append(edit)
+            lla = QHBoxLayout()
+            laList.append(lla)
+            i += 1
+        for k in kk:
+            lab = QLabel(k)
+            labelList.append(lab)
+        i = 0
+        for lab in laList:
+            lab.addWidget(labelList[i])
+            if i < 3:
+                lab.addWidget(self.editList[i])
+            i += 1
+        lala = QVBoxLayout()
+        fileBu = QPushButton('选择文件')
+        fileBu.setMinimumHeight(40)
+        sureBu = QPushButton('确  定')
+        sureBu.setMinimumHeight(40)
+        sureBu.clicked.connect(self.sure)
+        cancellBu = QPushButton('取  消')
+        cancellBu.setMinimumHeight(40)
+        cancellBu.clicked.connect(self.cancel)
+        la = QHBoxLayout()
+        la.addWidget(sureBu)
+        la.addStretch(1)
+        la.addWidget(cancellBu)
+        laList.append(la)
+        self.filename = MyLabel(path=self.path)
+        pe = QPalette()
+        pe.setColor(QPalette.WindowText, Qt.blue)
+        self.filename.setPalette(pe)
+        laList[3].addWidget(self.filename)
+        laList[3].addStretch(1)
+        laList[3].addWidget(fileBu)
+        self.editList[0].setText(self.auth)
+        self.editList[1].setText(self.Make)
+        self.editList[2].setText(self.time)
+        self.filename.setText(os.path.basename(self.path))
+        for lab in laList:
+            lala.addLayout(lab)
+        # laList[]
+        fileBu.clicked.connect(self.findfile)
+        self.setLayout(lala)
+
+    def sure(self):
+        self.auth = self.editList[0].text()
+        self.Make = self.editList[1].text()
+        self.time = self.editList[2].text()
+        stri = self.auth + '&&' + self.Make + '&&' + self.time + '&&' + self.path
+        self.myclick.emit(stri)
+        self.close()
+
+    def cancel(self):
+        self.close()
+
+    def findfile(self):
+        self.path, _ = QFileDialog.getOpenFileName(self, 'Open file')
+        self.filename.setText(os.path.basename(self.path))
+        self.filename.path = self.path
+
+    def oo(self):
+        os.system(self.path)
+
+    def work(self):
+        if not self.isVisible():
+            self.show()
+
+
+class MyLabel(QLabel):
+    path = ''
+
+    def __init__(self, parent=None, path=None):
+        super(MyLabel, self).__init__(parent)
+        self.path = path
+
+    def mouseDoubleClickEvent(self, e):
+        print(self.path)
+        os.system(self.path)
+
+
+class DelWindow(QWidget):
+    myclick = QtCore.pyqtSignal(str)
+
+    def __init__(self):
+        QWidget.__init__(self)
+        self.filPre = "./data/his/"
+        self.pathList = []
+        self.setupUi()
+
+    def setupUi(self):
+        self.fileList = QListWidget()
+        files = os.listdir(self.filPre)
+        for file in files:
+            ffs = os.listdir(self.filPre + file)
+            for ff in ffs:
+                item = QListWidgetItem()
+                item.setText(ff.split(".")[0])
+                item.setCheckState(QtCore.Qt.Unchecked)
+                self.pathList.append(self.filPre + file + '/' + ff)
+                self.fileList.addItem(item)
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(self.fileList)
+        layout1 = QHBoxLayout()
+        yeah = QPushButton('确  认')
+        yeah.setMinimumHeight(40)
+        yeah.clicked.connect(self.gogogo)
+        cancell = QPushButton('取  消')
+        cancell.setMinimumHeight(40)
+        cancell.clicked.connect(self.close)
+        layout1.addWidget(yeah)
+        layout1.addWidget(cancell)
+        mainLayout.addLayout(layout1)
+        self.setLayout(mainLayout)
+        pass
+
+    def gogogo(self):
+        for i in range(self.fileList.count()):
+            if self.fileList.item(i).checkState(0) == QtCore.Qt.Checked:
+                os.remove(self.fileList[i])
+                pass
+        self.myclick.emit(' ')
+        self.close()
+        pass
 
     def work(self):
         if not self.isVisible():
