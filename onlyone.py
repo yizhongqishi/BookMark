@@ -155,8 +155,9 @@ class ChangeWindow(QWidget):
         fo = open(self.path, 'r')
         stri = fo.read()
         fo.close()
-        self.setupUi(stri)
         self.ll = 0
+        self.setupUi(stri)
+
 
     def setupUi(self, stri):
         self.setWindowTitle("修改标签")
