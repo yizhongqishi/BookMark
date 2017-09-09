@@ -5,7 +5,7 @@ import sys
 import time
 
 from PyQt5 import QtCore
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import *
@@ -22,9 +22,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def setupUi(self):
         ww = QWidget()
         self.setWindowTitle("书籍摘录助手")
-        # self.setFixedSize(1366, 768)
         self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
-        self.resize(1366, 768)
+        self.resize(1280, 720)
         self.setWindowState(Qt.WindowMaximized)
         mainlayout = QHBoxLayout()
         mainlayout.setContentsMargins(0, 0, 0, 0)
@@ -171,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getCategory(self):
         self.category.clear()
-        fo = open(self.categoryPath, 'r')
+        fo = open(self.categoryPath, 'r', encoding='utf8')
         stri = fo.read()
         fo.close()
         kk = stri.split('&&')
