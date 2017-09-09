@@ -5,14 +5,14 @@ import re
 import sys
 import time
 import zipfile
+from docx import Document
 
 from PyQt5 import QtCore
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
-
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -30,11 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ww = QWidget()
 
         self.setWindowTitle("书籍摘录助手")
-        # self.setFixedSize(1366, 768)
-        self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
-        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
-        self.resize(1366, 768)
-        self.setWindowState(Qt.WindowMaximized)
+        self.setFixedSize(1280, 720)
         menuList = QWidget()
         menuList.setStyleSheet("font-size:20px;font-style:SansSerif;")
         layout0 = QVBoxLayout()
@@ -50,6 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         importFile.setMinimumHeight(40)
         toWord = QPushButton("导出为word")
         toWord.setMinimumHeight(40)
+        toWord.clicked.connect(self.toword)
         exportFile = QPushButton("笔记备份")
         exportFile.clicked.connect(self.exportfile)
         exportFile.setMinimumHeight(40)
@@ -59,7 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
         saveBu = QPushButton("保  存")
         saveBu.setMinimumHeight(40)
         saveBu.clicked.connect(self.save)
-        layoutMenu.setContentsMargins(0, 0, 0, 0)
+        layoutMenu.setContentsMargins(4, 0, 4, 0)
         menuList.setLayout(layoutMenu)
         layoutMenu.addWidget(newFile)
         layoutMenu.addWidget(delFile)
@@ -69,8 +66,8 @@ class MainWindow(QtWidgets.QMainWindow):
         layoutMenu.addWidget(cateAdmin)
         layoutMenu.addWidget(saveBu)
         layout0.setContentsMargins(0, 0, 0, 0)
-        ww0 = QWidget()
 
+        ww0 = QWidget()
         ww0.setStyleSheet("font-size:20px;font-style:SansSerif;")
         mainlayout = QHBoxLayout()
         mainlayout.setContentsMargins(0, 0, 0, 0)
@@ -159,7 +156,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ylayout.addWidget(zhaiLabel)
         ylayout.addStretch(1)
         self.zhaijiEd = QTextEdit()
-        self.zhaijiEd.setMinimumHeight(250)
+        self.zhaijiEd.setMinimumHeight(240)
         ylayout1 = QVBoxLayout()
         pingLable = QLabel("评注")
         ylayout1.addWidget(pingLable)
@@ -243,6 +240,27 @@ class MainWindow(QtWidgets.QMainWindow):
             item.setText(l)
             self.tll.addItem(item)
 
+    def toword(self):
+        path,_ = QFileDialog.getSaveFileName(self, "转为word", "", "doc files (*.doc);;")
+        document = Document()
+        table = document.add_table(rows=7, cols=2)
+        yy = ['创建时间', '更新时间', '书名', '类型', '作者', '出版社', '出版时间']
+        i = 0
+        for y in yy:
+            table.cell(i, 0).text = y
+            table.cell(i, 1).text = self.kk[i]
+            i += 1
+            if i == 4:
+                break
+        while i < 7:
+            table.cell(i, 0).text = yy[i]
+            table.cell(i, 1).text = self.kk[i + 2]
+            i += 1
+        document.add_heading('摘记', level=4)
+        zhaiji = document.add_paragraph(self.kk[4])
+        document.add_heading('评注', level=4)
+        pingzhu = document.add_paragraph(self.kk[5])
+        document.save(path)
 
     def importfile(self):
         reply = QMessageBox.question(self, '警告', '该操作将覆盖原有数据，是否继续？', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -284,7 +302,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dd.setStyleSheet("font-size:20px;font-style:SansSerif")
         self.dd.work()
         self.dd.myclick.connect(self.oo)
-        pass
 
     @QtCore.pyqtSlot(str)
     def oo(self, str):
@@ -302,7 +319,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 print(pathfile, arcname)
                 self.zipf.write(pathfile, arcname)
         self.zipf.close()
-        pass
 
     def thenew(self):
         self.createTime.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
@@ -321,7 +337,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.theinfo = str
         self.bookin.deleteLater()
         self.bookin = None
-        pass
+        
 
     def info(self):
         self.bookin = BookInfo(self.theinfo.split('&&'))
@@ -347,7 +363,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for file in files:
             if file not in kk:
                 self.remove("./data/his/" + file)
-        pass
+        
 
     def delCategory(self):
         self.treelist.clear()
@@ -356,8 +372,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.treelist.addTopLevelItem(self.categoryTree)
 
     def save(self):
-        self.zhaijiEd.append("____"+time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())+'_______')
-        self.pingZhuEd.append("____"+time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())+'_______')
+        self.pingZhuEd.append('-----添加于' + time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()) + '-----')
+        self.zhaijiEd.append('-----添加于' + time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()) + '-----')
         self.bookname = self.nameEd.text()
         self.cate = self.category.currentText()
         self.zhai = self.zhaijiEd.toPlainText()
@@ -397,7 +413,8 @@ class MainWindow(QtWidgets.QMainWindow):
             fo = open(self.filePath, 'w')
             fo.write(self.thesave)
             fo.close()
-
+            message = QtWidgets.QMessageBox(self)
+            message.information(self, '提示', '笔记保存成功')
     def checkFile(self):
         item = QtWidgets.QTreeWidgetItemIterator(self.categoryTree)
         while item.value():
@@ -426,13 +443,14 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(self.tll.count()):
             if self.tll.item(i).isSelected():
                 self.filePath = self.ppp + self.tll.item(i).text() + '.io'
+                print(self.filePath)
                 fo = open(self.filePath, 'r')
                 stri = fo.read()
                 fo.close()
                 self.kk = stri.split('&&')
                 self.updatezzz()
                 break
-        pass
+        
 
     def updatezzz(self):
         self.createTime.setText(self.kk[0])
@@ -471,7 +489,6 @@ class MainWindow(QtWidgets.QMainWindow):
             return time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())
         else:
             return self.kk[index]
-
 
 class ChangeWindow(QWidget):
     myclicked = QtCore.pyqtSignal(str)
@@ -612,7 +629,6 @@ class ChangeWindow(QWidget):
         if not self.isVisible():
             self.show()
 
-
 class BookInfo(QWidget):
     myclick = QtCore.pyqtSignal(str)
 
@@ -707,10 +723,9 @@ class BookInfo(QWidget):
         if not self.isVisible():
             self.show()
 
-
 class MyLabel(QLabel):
     path = ''
-
+    
     def __init__(self, parent=None, path=None):
         super(MyLabel, self).__init__(parent)
         self.path = path
@@ -753,7 +768,7 @@ class DelWindow(QWidget):
         layout1.addWidget(cancell)
         mainLayout.addLayout(layout1)
         self.setLayout(mainLayout)
-        pass
+    
 
     def gogogo(self):
         for i in range(self.fileList.count()):
@@ -763,16 +778,14 @@ class DelWindow(QWidget):
                 pass
         self.myclick.emit(' ')
         self.close()
-        pass
+        
 
     def work(self):
         if not self.isVisible():
             self.show()
 
-
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.show()
-
     sys.exit(app.exec_())
