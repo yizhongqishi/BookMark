@@ -234,7 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def searchfile(self):
         text = self.searchEd.text()
-        pattern = r'^.*' + terxt + r'.*$'
+        pattern = r'^.*' + text + r'.*$'
         li = []
         for i in range(self.tll.count()):
             if re.match(pattern, self.tll.item(i).text()):
