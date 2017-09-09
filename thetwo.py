@@ -29,8 +29,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def setupUi(self):
         ww = QWidget()
 
-        menu = QMenu()
-        # 新建笔记 删除笔记 笔记导入 导出为word 笔记备份 类别管理
         self.setWindowTitle("书籍摘录助手")
         # self.setFixedSize(1366, 768)
         self.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint)
@@ -358,6 +356,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.treelist.addTopLevelItem(self.categoryTree)
 
     def save(self):
+        self.zhaijiEd.append("____"+time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())+'_______')
+        self.pingZhuEd.append("____"+time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())+'_______')
         self.bookname = self.nameEd.text()
         self.cate = self.category.currentText()
         self.zhai = self.zhaijiEd.toPlainText()
@@ -757,8 +757,9 @@ class DelWindow(QWidget):
 
     def gogogo(self):
         for i in range(self.fileList.count()):
-            if self.fileList.item(i).checkState(0) == QtCore.Qt.Checked:
-                os.remove(self.fileList[i])
+            print(self.fileList.item(i).checkState())
+            if self.fileList.item(i).checkState() == QtCore.Qt.Checked:
+                os.remove(self.pathList[i])
                 pass
         self.myclick.emit(' ')
         self.close()
