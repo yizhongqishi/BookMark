@@ -1,4 +1,5 @@
 /.idea
+/.python-version
 /__pycache__
 /build
 /asdf.py
