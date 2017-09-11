@@ -297,9 +297,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def toword(self):
         if self.filePath == '':
-            QMessageBox.warning("错误", '请选择文件导出为word')
+            QMessageBox.warning(self, "错误", '请选择文件导出为word')
         else:
             path, _ = QFileDialog.getSaveFileName(self, "转为word", "", "doc files (*.doc);;")
+            if path == '':
+                return
             theinfo = ""
             yy = ['创建时间', '更新时间', '书名', '类型', '作者', '出版社', '出版时间']
             i = 0
