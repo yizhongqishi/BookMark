@@ -5,7 +5,6 @@ import re
 import sys
 import time
 import zipfile
-from docx import Document
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -46,7 +45,7 @@ class MainWindow(QtWidgets.QMainWindow):
         importFile.setMinimumHeight(40)
         toWord = QPushButton("导出为word")
         toWord.setMinimumHeight(40)
-        toWord.clicked.connect(self.toword)
+        # toWord.clicked.connect(self.toword)
         exportFile = QPushButton("笔记备份")
         exportFile.clicked.connect(self.exportfile)
         exportFile.setMinimumHeight(40)
@@ -240,27 +239,27 @@ class MainWindow(QtWidgets.QMainWindow):
             item.setText(l)
             self.tll.addItem(item)
 
-    def toword(self):
-        path,_ = QFileDialog.getSaveFileName(self, "转为word", "", "doc files (*.doc);;")
-        document = Document()
-        table = document.add_table(rows=7, cols=2)
-        yy = ['创建时间', '更新时间', '书名', '类型', '作者', '出版社', '出版时间']
-        i = 0
-        for y in yy:
-            table.cell(i, 0).text = y
-            table.cell(i, 1).text = self.kk[i]
-            i += 1
-            if i == 4:
-                break
-        while i < 7:
-            table.cell(i, 0).text = yy[i]
-            table.cell(i, 1).text = self.kk[i + 2]
-            i += 1
-        document.add_heading('摘记', level=4)
-        zhaiji = document.add_paragraph(self.kk[4])
-        document.add_heading('评注', level=4)
-        pingzhu = document.add_paragraph(self.kk[5])
-        document.save(path)
+    # def toword(self):
+    #     path,_ = QFileDialog.getSaveFileName(self, "转为word", "", "doc files (*.doc);;")
+    #     document = Document()
+    #     table = document.add_table(rows=7, cols=2)
+    #     yy = ['创建时间', '更新时间', '书名', '类型', '作者', '出版社', '出版时间']
+    #     i = 0
+    #     for y in yy:
+    #         table.cell(i, 0).text = y
+    #         table.cell(i, 1).text = self.kk[i]
+    #         i += 1
+    #         if i == 4:
+    #             break
+    #     while i < 7:
+    #         table.cell(i, 0).text = yy[i]
+    #         table.cell(i, 1).text = self.kk[i + 2]
+    #         i += 1
+    #     document.add_heading('摘记', level=4)
+    #     zhaiji = document.add_paragraph(self.kk[4])
+    #     document.add_heading('评注', level=4)
+    #     pingzhu = document.add_paragraph(self.kk[5])
+    #     document.save(path)
 
     def importfile(self):
         reply = QMessageBox.question(self, '警告', '该操作将覆盖原有数据，是否继续？', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)

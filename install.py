@@ -5,9 +5,9 @@ import sys
 base = "Win32GUI"
 executables = [
     Executable(
-        script='onlyone.py',
+        script='thetwo.py',
         targetName='assisstant.exe',
-        base="Win32GUI",
+        base=base,
         icon='laosiji.ico'
     )]
 
