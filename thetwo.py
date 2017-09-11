@@ -27,7 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.files = None
         self.setupUi()
         self.cli = False
-        self.listtemp = QListWidget()
+        self.listtemp = []
 
     def setupUi(self):
         ww = QWidget()
@@ -279,12 +279,13 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             if not self.cli:
                 self.tll.clear()
-                print("in")
-                for i in range(self.listtemp.count()):
-                    self.tll.addItem(self.listtemp.item(i))
-            self.listtemp.clear()
+                print(len(self.listtemp))
+                for stri in self.listtemp:
+                    item = QListWidgetItem(stri)
+                    self.tll.addItem(item)
+            self.listtemp = []
             for i in range(self.tll.count()):
-                self.listtemp.addItem(self.tll.item(i))
+                self.listtemp.append(self.tll.item(i).text())
                 if re.match(pattern, self.tll.item(i).text()):
                     li.append(self.tll.item(i).text())
             self.tll.clear()
@@ -652,7 +653,7 @@ class ChangeWindow(QWidget):
                 checkBox = QCheckBox(kk)
                 self.checkBoxList.append(checkBox)
                 self.layout.addWidget(checkBox, self.hang, self.lie)
-                self.hang += self.lie // 4
+                self.hang += (self.lie + 1) // 4
                 self.lie = (self.lie + 1) % 4
                 self.nn.setText('')
 
