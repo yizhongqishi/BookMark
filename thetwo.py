@@ -58,11 +58,11 @@ class MainWindow(QtWidgets.QMainWindow):
         importFile.clicked.connect(self.importfile)
         importFile.setMinimumHeight(40)
         toWord = QPushButton("导出为word")
+        toWord.clicked.connect(self.toword)
         toWord.setMinimumHeight(40)
         toWord.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
         toWord.setIcon(QIcon("./img/output.jpg"))
         toWord.setIconSize(QSize(20, 20))
-        # toWord.clicked.connect(self.toword)
         exportFile = QPushButton("笔记备份")
         exportFile.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
         exportFile.setIcon(QIcon("./img/output.jpg"))
@@ -295,27 +295,30 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.setText(l)
                 self.tll.addItem(item)
 
-    # def toword(self):
-    #     path,_ = QFileDialog.getSaveFileName(self, "转为word", "", "doc files (*.doc);;")
-    #     document = Document()
-    #     table = document.add_table(rows=7, cols=2)
-    #     yy = ['创建时间', '更新时间', '书名', '类型', '作者', '出版社', '出版时间']
-    #     i = 0
-    #     for y in yy:
-    #         table.cell(i, 0).text = y
-    #         table.cell(i, 1).text = self.kk[i]
-    #         i += 1
-    #         if i == 4:
-    #             break
-    #     while i < 7:
-    #         table.cell(i, 0).text = yy[i]
-    #         table.cell(i, 1).text = self.kk[i + 2]
-    #         i += 1
-    #     document.add_heading('摘记', level=4)
-    #     zhaiji = document.add_paragraph(self.kk[4])
-    #     document.add_heading('评注', level=4)
-    #     pingzhu = document.add_paragraph(self.kk[5])
-    #     document.save(path)
+    def toword(self):
+        if self.filePath == '':
+            QMessageBox.warning("错误", '请选择文件导出为word')
+        else:
+            path, _ = QFileDialog.getSaveFileName(self, "转为word", "", "doc files (*.doc);;")
+            theinfo = ""
+            yy = ['创建时间', '更新时间', '书名', '类型', '作者', '出版社', '出版时间']
+            i = 0
+            for y in yy:
+                theinfo += y + " : "
+                theinfo += self.kk[i] + '\n\n'
+                i += 1
+                if i == 4:
+                    break
+
+            while i < 7:
+                theinfo += yy[i] + " : "
+                theinfo += self.kk[i + 2]
+                i += 1
+            theinfo += "摘记 :\n" + self.kk[4] + '\n\n'
+            theinfo += "评注 :\n" + self.kk[5] + '\n\n'
+            fo = open(path, 'w')
+            fo.write(theinfo)
+            fo.close()
 
     def importfile(self):
         reply = QMessageBox.question(self, '警告', '该操作将覆盖原有数据，是否继续？', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
