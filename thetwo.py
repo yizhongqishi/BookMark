@@ -27,7 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.files = None
         self.setupUi()
         self.cli = False
-        self.tttt = QListWidget()
+        self.listtemp = QListWidget()
 
     def setupUi(self):
         ww = QWidget()
@@ -280,11 +280,11 @@ class MainWindow(QtWidgets.QMainWindow):
             if not self.cli:
                 self.tll.clear()
                 print("in")
-                for i in range(self.tttt.count()):
-                    self.tll.addItem(self.tttt.item(i))
-            self.tttt.clear()
+                for i in range(self.listtemp.count()):
+                    self.tll.addItem(self.listtemp.item(i))
+            self.listtemp.clear()
             for i in range(self.tll.count()):
-                self.tttt.addItem(self.tll.item(i))
+                self.listtemp.addItem(self.tll.item(i))
                 if re.match(pattern, self.tll.item(i).text()):
                     li.append(self.tll.item(i).text())
             self.tll.clear()
