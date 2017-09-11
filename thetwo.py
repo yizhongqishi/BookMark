@@ -8,8 +8,10 @@ import zipfile
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSize
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import *
 
@@ -24,6 +26,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bookin = None
         self.files = None
         self.setupUi()
+        self.cli = False
+        self.tttt = QListWidget()
 
     def setupUi(self):
         ww = QWidget()
@@ -34,25 +38,47 @@ class MainWindow(QtWidgets.QMainWindow):
         menuList.setStyleSheet("font-size:20px;font-style:SansSerif;")
         layout0 = QVBoxLayout()
         layoutMenu = QHBoxLayout()
+        layoutMenu.setSpacing(10)
         newFile = QPushButton("新建笔记")
+        newFile.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
+        newFile.setIcon(QIcon("./img/newfile.png"))
+        newFile.setIconSize(QSize(20, 20))
         newFile.clicked.connect(self.thenew)
         newFile.setMinimumHeight(40)
         delFile = QPushButton("删除笔记")
+        delFile.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
+        delFile.setIcon(QIcon("./img/delete.jpg"))
+        delFile.setIconSize(QSize(20, 20))
         delFile.clicked.connect(self.delfile)
         delFile.setMinimumHeight(40)
         importFile = QPushButton("笔记导入")
+        importFile.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
+        importFile.setIcon(QIcon("./img/import.png"))
+        importFile.setIconSize(QSize(20, 20))
         importFile.clicked.connect(self.importfile)
         importFile.setMinimumHeight(40)
         toWord = QPushButton("导出为word")
         toWord.setMinimumHeight(40)
+        toWord.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
+        toWord.setIcon(QIcon("./img/output.jpg"))
+        toWord.setIconSize(QSize(20, 20))
         # toWord.clicked.connect(self.toword)
         exportFile = QPushButton("笔记备份")
+        exportFile.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
+        exportFile.setIcon(QIcon("./img/output.jpg"))
+        exportFile.setIconSize(QSize(20, 20))
         exportFile.clicked.connect(self.exportfile)
         exportFile.setMinimumHeight(40)
         cateAdmin = QPushButton("类别管理")
+        cateAdmin.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
+        cateAdmin.setIcon(QIcon("./img/manager.jpg"))
+        cateAdmin.setIconSize(QSize(20, 20))
         cateAdmin.setMinimumHeight(40)
         cateAdmin.clicked.connect(self.change)
         saveBu = QPushButton("保  存")
+        saveBu.setStyleSheet("QPushButton{border-style:none;border-radius:5px}QPushButton:hover{background:#B0E0E6}")
+        saveBu.setIcon(QIcon("./img/save.jpg"))
+        saveBu.setIconSize(QSize(20, 20))
         saveBu.setMinimumHeight(40)
         saveBu.clicked.connect(self.save)
         layoutMenu.setContentsMargins(4, 0, 4, 0)
@@ -64,6 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
         layoutMenu.addWidget(exportFile)
         layoutMenu.addWidget(cateAdmin)
         layoutMenu.addWidget(saveBu)
+        layoutMenu.addStretch()
         layout0.setContentsMargins(0, 0, 0, 0)
 
         ww0 = QWidget()
@@ -100,7 +127,9 @@ class MainWindow(QtWidgets.QMainWindow):
         kk = QWidget()
         kk.setStyleSheet("font-size:20px;font-style:SansSerif;border-radius:0px;border-width:1px;border-style:solid;")
         searchBu = QPushButton("搜索")
-        searchBu.setStyleSheet("QPushButton:hover{color: blue;border-style:none;}")
+        searchBu.setIcon(QIcon("./img/search.jpg"))
+        searchBu.setIconSize(QSize(20, 20))
+        searchBu.setStyleSheet("QPushButton:hover{background:#B0E0E6;border-radius:15px}")
         searchBu.setFont(QFont('SansSerif', 20))
         searchBu.clicked.connect(self.searchfile)
         searchBu.setMinimumHeight(40)
@@ -133,7 +162,6 @@ class MainWindow(QtWidgets.QMainWindow):
         layout2.addWidget(kk1)
         layout2.setStretchFactor(kk, 1)
         layout2.setStretchFactor(kk1, 7)
-        layout2.addStretch(1)
 
         ww3 = QWidget()
         ww3.setStyleSheet("font-size:20px;font-style:SansSerif;background:white;border-radius:10px;background:#e6e8e7")
@@ -148,7 +176,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nameEd = QLineEdit()
         self.nameEd.setStyleSheet("border-style:solid;border-width:1px;border-radius:0px;background:white")
         otherBu = QPushButton("其他信息")
-        otherBu.setStyleSheet("QPushButton:hover{color:blue}")
+        otherBu.setStyleSheet("QPushButton:hover{background:#B0E0E6;border-radius:15px}")
         otherBu.clicked.connect(self.info)
         otherBu.setMinimumHeight(40)
         cateLable = QLabel("类别")
@@ -164,14 +192,14 @@ class MainWindow(QtWidgets.QMainWindow):
         ylayout.addStretch(1)
         self.zhaijiEd = QTextEdit()
         self.zhaijiEd.setStyleSheet("border-style:solid;border-width:1px;border-radius:0px;background:white")
-        self.zhaijiEd.setMinimumHeight(240)
+        self.zhaijiEd.setMinimumHeight(270)
         ylayout1 = QVBoxLayout()
         pingLable = QLabel("评注")
         ylayout1.addWidget(pingLable)
         ylayout1.addStretch(1)
         self.pingZhuEd = QTextEdit()
         self.pingZhuEd.setStyleSheet("border-style:solid;border-width:1px;border-radius:0px;background:white")
-        self.pingZhuEd.setMinimumHeight(240)
+        self.pingZhuEd.setMinimumHeight(270)
 
         l311 = QHBoxLayout()
         l311.addWidget(createLabel)
@@ -228,7 +256,6 @@ class MainWindow(QtWidgets.QMainWindow):
         llt.addWidget(ww2)
         mainlayout.addLayout(llt)
         llt.setContentsMargins(5, 5, 5, 5)
-        # mainlayout.addWidget(ww2)
 
         mainlayout.addLayout(layout3)
         mainlayout.setStretchFactor(layout1, 1)
@@ -246,14 +273,26 @@ class MainWindow(QtWidgets.QMainWindow):
         text = self.searchEd.text()
         pattern = r'^.*' + text + r'.*$'
         li = []
-        for i in range(self.tll.count()):
-            if re.match(pattern, self.tll.item(i).text()):
-                li.append(self.tll.item(i).text())
-        self.tll.clear()
-        for l in li:
-            item = QListWidgetItem()
-            item.setText(l)
-            self.tll.addItem(item)
+        message = QMessageBox
+        if self.tll.count() == 0:
+            message.warning(self, "错误", "没有可供选择的项")
+        else:
+            if not self.cli:
+                self.tll.clear()
+                print("in")
+                for i in range(self.tttt.count()):
+                    self.tll.addItem(self.tttt.item(i))
+            self.tttt.clear()
+            for i in range(self.tll.count()):
+                self.tttt.addItem(self.tll.item(i))
+                if re.match(pattern, self.tll.item(i).text()):
+                    li.append(self.tll.item(i).text())
+            self.tll.clear()
+            self.cli = False
+            for l in li:
+                item = QListWidgetItem()
+                item.setText(l)
+                self.tll.addItem(item)
 
     # def toword(self):
     #     path,_ = QFileDialog.getSaveFileName(self, "转为word", "", "doc files (*.doc);;")
@@ -313,6 +352,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def delfile(self):
         self.dd = DelWindow()
+        self.dd.setWindowTitle("删除笔记")
         self.dd.resize(480, 272)
         self.dd.setStyleSheet("font-size:20px;font-style:SansSerif")
         self.dd.work()
@@ -325,6 +365,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def exportfile(self):
         output_filename, _ = QFileDialog.getSaveFileName(self, "数据备份", "", "out files (*.out);;")
+        if output_filename == "":
+            return
         self.zipf = zipfile.ZipFile(output_filename, 'w')
         pre_len = len(os.path.dirname("./data/"))
         for parent, dirnames, filenames in os.walk("./data/"):
@@ -431,6 +473,7 @@ class MainWindow(QtWidgets.QMainWindow):
             message = QtWidgets.QMessageBox(self)
             message.information(self, '提示', '笔记保存成功')
     def checkFile(self):
+        self.cli = True
         item = QtWidgets.QTreeWidgetItemIterator(self.categoryTree)
         while item.value():
             if item.value().isSelected():
