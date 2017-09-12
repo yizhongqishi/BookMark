@@ -434,6 +434,7 @@ class MainWindow(QWidget):
         self.zipf.close()
 
     def thenew(self):
+        self.wwl.setCurrentIndex(1)
         self.createTime.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
         self.lastTime.setText(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
         self.nameEd.setText("")
