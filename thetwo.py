@@ -5,6 +5,7 @@ import re
 import sys
 import time
 import zipfile
+from PyQt5 import QtGui
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -30,8 +31,11 @@ class MainWindow(QWidget):
         self.listtemp = []
 
     def setupUi(self):
-        # ww = QWidget()
-        self.setStyleSheet("")
+        self.wwl = QStackedLayout()
+        w1 = QLabel()
+        # palette = QtGui.QPalette()
+        icon = QtGui.QPixmap('./img/42424.jpg')
+        w1.setPixmap(icon)
         self.setWindowTitle("书籍摘录助手")
         self.setFixedSize(1280, 690)
         menuList = QWidget()
@@ -143,8 +147,8 @@ class MainWindow(QWidget):
         self.searchEd.resize(self.searchEd.sizeHint())
         searchBu = QPushButton(parent=self.searchEd)
         searchBu.setIcon(QIcon("./img/search.png"))
-        searchBu.setIconSize(QSize(30,30))
-        searchBu.setGeometry(225,1, 30, 32)
+        searchBu.setIconSize(QSize(30, 30))
+        searchBu.setGeometry(251, 1, 30, 32)
         searchBu.setStyleSheet("QPushButton{border-style:none}QPushButton:hover{background:#B0E0E6;}")
         searchBu.setFont(QFont('SansSerif', 16))
         self.searchEd.returnPressed.connect(self.searchfile)
@@ -284,19 +288,32 @@ class MainWindow(QWidget):
         ww2.setLayout(layout2)
         llt = QHBoxLayout()
         llt.addWidget(ww2)
-        mainlayout.addLayout(llt)
+
         llt.setContentsMargins(0, 5, 5, 5)
 
-        mainlayout.addLayout(layout3)
+        wtt = QWidget()
+        laaa = QHBoxLayout()
+        laaa.setSpacing(0)
+        laaa.setContentsMargins(0,0,0,0)
+        laaa.addLayout(llt)
+        laaa.addLayout(layout3)
+        wtt.setLayout(laaa)
+
+        # mainlayout.addLayout(llt)
+        # mainlayout.addLayout(layout3)
+        self.wwl.addWidget(w1)
+        self.wwl.addWidget(wtt)
+        self.wwl.setCurrentIndex(0)
+        mainlayout.addLayout(self.wwl)
         mainlayout.setStretchFactor(layout1, 1)
-        mainlayout.setStretchFactor(layout2, 2)
-        mainlayout.setStretchFactor(layout3, 4)
+        # mainlayout.setStretchFactor(llt, 2)
+        # mainlayout.setStretchFactor(layout3, 4)
+        mainlayout.setStretchFactor(self.wwl, 6)
         mainlayout.setSpacing(0)
 
         ww0.setLayout(mainlayout)
         layout0.addWidget(menuList)
         layout0.addWidget(ww0)
-
         self.setLayout(layout0)
         # self.setCentralWidget(ww)
 
@@ -511,6 +528,7 @@ class MainWindow(QWidget):
             message.information(self, '提示', '笔记保存成功')
     def checkFile(self):
         self.cli = True
+        self.wwl.setCurrentIndex(1)
         item = QtWidgets.QTreeWidgetItemIterator(self.categoryTree)
         while item.value():
             if item.value().isSelected():
