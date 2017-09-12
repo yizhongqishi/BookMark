@@ -261,14 +261,14 @@ class MainWindow(QWidget):
         l314 = QHBoxLayout()
         l314.addLayout(ylayout)
         l314.addStretch(1)
-        self.zhaijiEd.setMinimumWidth(707)
+        self.zhaijiEd.setMinimumWidth(693)
         l314.addWidget(self.zhaijiEd)
         l314.setContentsMargins(8, 8, 8, 8)
 
         l315 = QHBoxLayout()
         l315.addLayout(ylayout1)
         l315.addStretch(1)
-        self.pingZhuEd.setMinimumWidth(707)
+        self.pingZhuEd.setMinimumWidth(693)
         l315.addWidget(self.pingZhuEd)
         l315.setContentsMargins(8, 8, 8, 8)
 
@@ -297,6 +297,8 @@ class MainWindow(QWidget):
         laaa.setContentsMargins(0,0,0,0)
         laaa.addLayout(llt)
         laaa.addLayout(layout3)
+        laaa.setStretchFactor(llt,2)
+        laaa.setStretchFactor(layout3,5)
         wtt.setLayout(laaa)
 
         # mainlayout.addLayout(llt)
