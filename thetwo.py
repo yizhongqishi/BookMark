@@ -33,7 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ww = QWidget()
 
         self.setWindowTitle("书籍摘录助手")
-        self.setFixedSize(1280, 720)
+        self.setFixedSize(1280, 720) 
         menuList = QWidget()
         menuList.setStyleSheet("font-size:20px;font-style:SansSerif;")
         layout0 = QVBoxLayout()
