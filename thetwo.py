@@ -261,14 +261,14 @@ class MainWindow(QWidget):
         l314 = QHBoxLayout()
         l314.addLayout(ylayout)
         l314.addStretch(1)
-        self.zhaijiEd.setMinimumWidth(693)
+        self.zhaijiEd.setMinimumWidth(699)
         l314.addWidget(self.zhaijiEd)
         l314.setContentsMargins(8, 8, 8, 8)
 
         l315 = QHBoxLayout()
         l315.addLayout(ylayout1)
         l315.addStretch(1)
-        self.pingZhuEd.setMinimumWidth(693)
+        self.pingZhuEd.setMinimumWidth(699)
         l315.addWidget(self.pingZhuEd)
         l315.setContentsMargins(8, 8, 8, 8)
 
